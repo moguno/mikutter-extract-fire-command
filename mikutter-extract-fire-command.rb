@@ -66,21 +66,27 @@ Plugin.create(:extract_tab_fire_command) {
         item = store.append
 
         # 名前
-        name = if command[:name].is_a? Proc
+        name = if command[:name].is_a?(Proc)
           command[:name].call(nil)
         else
           command[:name]
         end
 
         # アイコン
-        icon = if command[:icon].is_a? Proc
+        icon = if command[:icon].is_a?(Proc)
           command[:icon].call(nil)
         else
           command[:icon]
         end
 
         if icon
-          item[COL_ICON] = Gdk::WebImageLoader.pixbuf(icon, 16, 16){ |pixbuf|
+          icon_model = if icon.is_a?(String)
+            Plugin.filtering(:photo_filter, icon, []).last.first
+          else
+            icon
+          end
+
+          item[COL_ICON] = icon_model.load_pixbuf(width: 16, height: 16){ |pixbuf|
             if !destroyed?
               item[COL_ICON] = pixbuf
             end
@@ -108,14 +114,9 @@ Plugin.create(:extract_tab_fire_command) {
 
     def initialize(*args)
       initialize_mog(*args)    
-begin
+
       notebook = children[0].children[0]
       notebook.append_page(fire_command_widget, Gtk::Label.new("適用するコマンド")).show_all
-
-rescue => e
-puts e
-puts e.backtrace
-end
     end
   end
 
@@ -143,11 +144,7 @@ end
       extract = Plugin[:extract].extract_tabs[i_timeline.extract_id]
 
       Delayer.new {
-        msgs = if messages.is_a?(Messages)
-          messages.to_a
-        else
-          [messages]
-        end
+        msgs = Array(messages)
 
         event = Plugin::GUI::Event.new(:contextmenu, i_timeline, msgs)
         commands = Plugin.filtering(:command, {})[0]
