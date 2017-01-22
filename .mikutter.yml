@@ -1,12 +1,12 @@
 ---
 slug: :mikutter-extract-fire-command
 depends:
-  mikutter: 3.0.4
+  mikutter: 3.5.0
   plugin:
   - extract
   - gtk
   - gui
-version: '0.0.1'
+version: '0.1.1'
 author: 
 name: mikutter-extract-fire-command
 description: "抽出結果のメッセージに対して、コマンドを実行します。"
